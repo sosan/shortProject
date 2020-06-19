@@ -22,4 +22,13 @@ router.post('/short', async (req, res) => {
     }
 });
 
+router.get('/s/:shortCode', async (req, res) => {
+    const shortCode = req.params.shortCode
+    let findUrlBehind = await dataBase.someOneClickedOnLink(shortCode);
+    //let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    console.log(ip)
+    //res.json({ message: findUrlBehind })
+    res.redirect(findUrlBehind)
+})
+
 module.exports = router;
