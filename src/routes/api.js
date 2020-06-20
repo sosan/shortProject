@@ -1,7 +1,10 @@
 const express = require('express');
+const geoip = require('geoip-lite')
 const dataBase = require('../libs/dataBase');
 const utilsUrl = require('../utils/url');
 const router = express.Router();
+
+const DEVMODE = true;
 
 router.get('/', (req, res) => {
     res.json({ 'message': 'SERVER RUNNING' })
@@ -24,11 +27,25 @@ router.post('/short', async (req, res) => {
 
 router.get('/s/:shortCode', async (req, res) => {
     const shortCode = req.params.shortCode
-    let findUrlBehind = await dataBase.someOneClickedOnLink(shortCode);
-    //let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    console.log(ip)
-    //res.json({ message: findUrlBehind })
-    res.redirect(findUrlBehind)
-})
+
+    let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    ip = "35.227.62.178"; //FORCE
+    let geoLocateIp = geoip.lookup(ip)
+    let userAgent = req.useragent;
+
+    let country = geoLocateIp.country;
+    let sO = userAgent.os;
+    let browser = userAgent.browser;
+    let findUrlBehind = await dataBase.someOneClickedOnLink(shortCode, country, sO, browser);
+    
+    
+    res.redirect(findUrlBehind);
+});
+
+router.get('/s/:shortCode/a', async (req,res) => {
+    const shortCode = req.params.shortCode;
+    let data = await dataBase.checkDataFromCode(shortCode)
+    res.json(data)
+});
 
 module.exports = router;
