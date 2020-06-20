@@ -1,8 +1,6 @@
 const shortSchema = require('../models/shorts');
 const utilsUrl = require('../utils/url');
 const shortCodeGenerator = require('../libs/shortCodeGenerator');
-const { find } = require('../models/shorts');
-const { all } = require('../routes/api');
 
 
 async function createNewShort(url) {
@@ -11,11 +9,12 @@ async function createNewShort(url) {
     return new Promise(async (resolve, reject) => {
         let isUrl = utilsUrl.checkIfIsUrl(url)
         if (isUrl) {
-            let codeGenerated = shortCodeGenerator.generateShortCode();
+            let codeGeneratedToShow = shortCodeGenerator.generateShortCode().objectToShow
+            let codeGenerated = shortCodeGenerator.generateShortCode().objectStored;
             let checkIfCodeIsInDbAndRegenerateIfNot = await checkShortCodeInDb(codeGenerated)
             let newUrlShot = new shortSchema({ url: url, shortCode: checkIfCodeIsInDbAndRegenerateIfNot, clicks: [] });
             let dataSaved = await newUrlShot.save()
-            resolve(dataSaved)
+            resolve({urlShort : codeGeneratedToShow})
         } else {
             reject({ error: "notUrl" });
         }
@@ -25,6 +24,7 @@ async function createNewShort(url) {
 async function someOneClickedOnLink(code, country, sO, browser) {
     return new Promise(async (resolve, reject) => {
         let findShortedUrl = await shortSchema.findOne({ shortCode: code })
+        console.log(code + " CODIGO")
         let pushNewClickData = await shortSchema.updateOne({ shortCode: code }, {
             $push: {
                 clicks: {
@@ -40,9 +40,7 @@ async function someOneClickedOnLink(code, country, sO, browser) {
 
 async function checkDataFromCode(code) {
     return new Promise(async (resolve, reject) => {
-        let strucData = { countries: [], browsers: [], sO: [] }
         let findShorted = await shortSchema.findOne({ shortCode: code })
-
 /*
         let allCountries = findShorted.clicks.map((item) => {
             let allValues = Object.values(item.toObject())
@@ -51,10 +49,6 @@ async function checkDataFromCode(code) {
         })
         console.log(allCountries)
 */
-        
-
-        
-     
         resolve(findShorted)
     });
 }
@@ -64,9 +58,7 @@ async function checkShortCodeInDb(shortCode) {
     let valueShort = await shortSchema.findOne({ 'shortCode': shortCode });
     if (valueShort != null) {
         console.log("Llamada recursiva")
-        //Call this same function recursively until we get
-        //A shotCode that is not in DataBase
-        await checkShortCodeInDb(shortCodeGenerator.generateShortCode())
+        await checkShortCodeInDb(shortCodeGenerator.generateShortCode().objectStored)
     } else {
         console.log("Solucion encontrada")
         return shortCode

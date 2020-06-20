@@ -26,7 +26,7 @@ const adjetivos = [
     "AllanaBarroncas",
     "Entusiasta",
     "Lloron",
-    "ChupaLimoes",
+    "ChupaLimones",
     "MuerdePiedras",
     "Afortunado",
     "Cotilla",
@@ -39,7 +39,10 @@ const adjetivos = [
 function generateShortCode() {
     let randOne = numbers.randomIntRange(0, animales.length - 1)
     let randTwo = numbers.randomIntRange(0, adjetivos.length - 1)
-    return `${animales[randOne]}${adjetivos[randTwo]}`
+    return {
+        objectStored : `${animales[randOne].toLowerCase()}${adjetivos[randTwo].toLowerCase()}`,
+        objectToShow : `${animales[randOne]}${adjetivos[randTwo]}`
+    }
 }
 
 module.exports = { generateShortCode }
