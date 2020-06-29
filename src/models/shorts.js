@@ -10,6 +10,7 @@ let shortSchema = new Schema({
             country: String,
             sO: String,
             browser: String,
+            html: String,
             clickDate: { type: Date, default: Date.now }
         }
     ]

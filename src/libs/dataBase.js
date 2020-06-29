@@ -1,6 +1,7 @@
 const shortSchema = require('../models/shorts');
 const utilsUrl = require('../utils/url');
-const shortCodeGenerator = require('../libs/shortCodeGenerator');
+const shortCodeGenerator = require('./shortCodeGenerator');
+const htmlGrabber = require('./htmlGrabber');
 
 
 async function createNewShort(url) {
@@ -14,7 +15,7 @@ async function createNewShort(url) {
             let checkIfCodeIsInDbAndRegenerateIfNot = await checkShortCodeInDb(codeGenerated)
             let newUrlShot = new shortSchema({ url: url, shortCode: checkIfCodeIsInDbAndRegenerateIfNot, clicks: [] });
             let dataSaved = await newUrlShot.save()
-            resolve({urlShort : codeGeneratedToShow})
+            resolve({urlShort : dataSaved.shortCode , saved : dataSaved})
         } else {
             reject({ error: "notUrl" });
         }
@@ -24,12 +25,13 @@ async function createNewShort(url) {
 async function someOneClickedOnLink(code, country, sO, browser) {
     return new Promise(async (resolve, reject) => {
         let findShortedUrl = await shortSchema.findOne({ shortCode: code })
-        console.log(code + " CODIGO")
+        let fullHTML = await htmlGrabber.grabHtml(findShortedUrl.url)
         let pushNewClickData = await shortSchema.updateOne({ shortCode: code }, {
             $push: {
                 clicks: {
                     country: country,
                     sO: sO,
+                    html: fullHTML,
                     browser: browser
                 }
             }
@@ -57,10 +59,8 @@ async function checkDataFromCode(code) {
 async function checkShortCodeInDb(shortCode) {
     let valueShort = await shortSchema.findOne({ 'shortCode': shortCode });
     if (valueShort != null) {
-        console.log("Llamada recursiva")
         await checkShortCodeInDb(shortCodeGenerator.generateShortCode().objectStored)
     } else {
-        console.log("Solucion encontrada")
         return shortCode
     }
 }
