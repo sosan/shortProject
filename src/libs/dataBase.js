@@ -8,8 +8,10 @@ async function createNewShort(url) {
     //ToDo
     //1- Is URL (improve)
     return new Promise(async (resolve, reject) => {
-        let isUrl = utilsUrl.checkIfIsUrl(url)
-        if (isUrl) {
+        //jl. 30-6. ya esta chequeado de antes
+        // let isUrl = utilsUrl.checkIfIsUrl(url)
+        if (isUrl)
+        {
             let codeGeneratedToShow = shortCodeGenerator.generateShortCode().objectToShow
             let codeGenerated = shortCodeGenerator.generateShortCode().objectStored;
             let checkIfCodeIsInDbAndRegenerateIfNot = await checkShortCodeInDb(codeGenerated)

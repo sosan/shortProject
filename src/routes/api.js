@@ -8,17 +8,29 @@ router.get('/', (req, res) => {
     res.json({ 'message': 'SERVER RUNNING' });
 });
 
-router.post('/short', async (req, res) => {
+router.post('/short', async (req, res) => 
+{
     let url = req.body.url;
-    if (typeof url != "undefined") {
-            let isUrl = utilsUrl.checkIfIsUrl(url);
-            if (isUrl) {
-                let created = await dataBase.createNewShort(url);
+    if (typeof url != "undefined") 
+    {
+        let isUrl = utilsUrl.checkIfIsUrl(url);
+        if (isUrl) 
+        {
+            let created = await dataBase.createNewShort(url);
+            if (created == true)
+            {
                 res.json({ message: created });
-            } else {
-                res.json({ message: 'Not a url.' });
             }
-    } else {
+            else
+            {
+
+            }
+        } else {
+            res.json({ message: 'Not a url.' });
+        }
+    } 
+    else 
+    {
         res.json({ message: 'Not url specified.' }).status;
     }
 });
