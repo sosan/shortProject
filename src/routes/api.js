@@ -14,18 +14,23 @@ router.post('/short', async (req, res) =>
     if (typeof url != "undefined") 
     {
         let isUrl = utilsUrl.checkIfIsUrl(url);
-        if (isUrl) 
+        if (isUrl === true) 
         {
-            let created = await dataBase.createNewShort(url);
-            if (created == true)
+            let objData = await dataBase.createNewShort(url);
+            if (objData.created === true)
             {
-                res.json({ message: created });
+                res.json({
+                    created: true,
+                    
+                });
             }
             else
             {
-
+                res.json(objData);
             }
-        } else {
+        }
+        else
+        {
             res.json({ message: 'Not a url.' });
         }
     } 

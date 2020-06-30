@@ -7,20 +7,41 @@ const htmlGrabber = require('./htmlGrabber');
 async function createNewShort(url) {
     //ToDo
     //1- Is URL (improve)
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve, reject) => 
+    {
         //jl. 30-6. ya esta chequeado de antes
         // let isUrl = utilsUrl.checkIfIsUrl(url)
-        if (isUrl)
+        let checkIsInDB = await checkIfUrlExistInDb(url)
+        if (checkIsInDB.existUrl === true) 
         {
-            let codeGeneratedToShow = shortCodeGenerator.generateShortCode().objectToShow
-            let codeGenerated = shortCodeGenerator.generateShortCode().objectStored;
-            let checkIfCodeIsInDbAndRegenerateIfNot = await checkShortCodeInDb(codeGenerated)
-            let newUrlShot = new shortSchema({ url: url, shortCode: checkIfCodeIsInDbAndRegenerateIfNot, clicks: [] });
-            let dataSaved = await newUrlShot.save()
-            resolve({urlShort : dataSaved.shortCode , saved : dataSaved})
-        } else {
-            reject({ error: "notUrl" });
+            return resolve({
+                created: false,
+                urlShort: checkIsInDB.data.shortCode, // quizas quitarlo
+                saved: new shortSchema({
+                    url: checkIsInDB.data.url,
+                    shortCode: checkIsInDB.data.shortCode,
+                    clicks: checkIsInDB.data.clicks
+                })
+            })
+        
         }
+            
+        // let codeGeneratedToShow = shortCodeGenerator.generateShortCode().objectToShow
+        let codeGenerated = shortCodeGenerator.generateShortCode().objectStored;
+        let checkIfCodeIsInDbAndRegenerateIfNot = await checkShortCodeInDb(codeGenerated)
+        let newUrlShot = new shortSchema({ url: url, shortCode: checkIfCodeIsInDbAndRegenerateIfNot, clicks: [] });
+        let dataSaved = await newUrlShot.save()
+        return resolve(
+            {
+                created: true, 
+                urlShort : dataSaved.shortCode,
+                saved: new shortSchema({
+                    url: dataSaved.url,
+                    shortCode: dataSaved.shortCode,
+                    clicks: dataSaved.clicks
+                })})
+
+
     });
 }
 
@@ -64,6 +85,29 @@ async function checkShortCodeInDb(shortCode) {
         await checkShortCodeInDb(shortCodeGenerator.generateShortCode().objectStored)
     } else {
         return shortCode
+    }
+}
+
+async function checkIfUrlExistInDb(url) {
+
+    //jl. TODO: control de errores de conexion, etc...
+    let checkedUrl = await shortSchema.findOne({
+        'url': url
+    });
+
+    if (checkedUrl != null) {
+        console.log("Url exist in DB")
+        return {
+            existUrl: true,
+            data: checkedUrl
+        };
+    
+    } else {
+        console.log("Url Not Exist in DB")
+        return {
+            existUrl: false,
+            data: checkedUrl
+        };
     }
 }
 
